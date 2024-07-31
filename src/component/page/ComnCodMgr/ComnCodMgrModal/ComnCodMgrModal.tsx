@@ -86,8 +86,13 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
 
     };
 
+    const cleanUp = () => {
+        SetDetailComnCod(undefined);
+        setGrpCod('');
+    };
+
     return(
-        <ComnCodMgrModalStyled isOpen={modal} ariaHideApp={false}>
+        <ComnCodMgrModalStyled isOpen={modal} ariaHideApp={false} onAfterClose={cleanUp}>
             <div className="wrap">
                 <div className="header">그룹 코드 관리</div>
                 <ComnCodMgrTableStyled>
