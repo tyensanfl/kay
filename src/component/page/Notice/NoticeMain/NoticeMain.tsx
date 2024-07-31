@@ -6,12 +6,13 @@ import {
   StyledTd,
   StyledTh,
 } from "../../../common/styled/StyledTable";
-import { Protal } from "../../../common/potal/Portal";
 import { NoticeModal } from "../NoticeModal/NoticeModal";
+import { Protal } from "../../../common/potal/Portal";
 import { useRecoilState } from "recoil";
 import { modalState } from "../../../../stores/ModalState";
+import { PageNavigate } from "../../../common/pageNavigation/PageNavigate";
 
-export interface INoticeList {
+export interface INtoceList {
   file_ext: string;
   file_name: string;
   file_size: number;
@@ -25,24 +26,21 @@ export interface INoticeList {
 }
 
 export interface INoticeListJsonResponse {
-  noticeList: INoticeList[];
   listCount: number;
+  noticeList: INtoceList[];
 }
 
 export const NoticeMain = () => {
   const { search } = useLocation();
-  const [noticeList, setNoticeList] = useState<INoticeList[]>([]);
-  const [modal, setModalState] = useRecoilState<boolean>(modalState);
-  const [noticeSeq, setNoticeSeq] = useState<number>();
+  const [noticeList, setNoticeList] = useState<INtoceList[]>([]);
+  const [listCount, setListCount] = useState<number>(0);
+  const [modal, setModal] = useRecoilState<boolean>(modalState);
+  const [notiSeq, setNotiSeq] = useState<number>();
+  const [currentParam, setCurrentParam] = useState<number | undefined>();
 
   useEffect(() => {
     searchNoticeList();
   }, [search]);
-
-  const handlerModal = (seq?: number) => {
-    setNoticeSeq(seq);
-    setModalState(!modal);
-  };
 
   const searchNoticeList = (cpage?: number) => {
     cpage = cpage || 1;
@@ -55,12 +53,24 @@ export const NoticeMain = () => {
       .post("/board/noticeListJson.do", searchParam)
       .then((res: AxiosResponse<INoticeListJsonResponse>) => {
         setNoticeList(res.data.noticeList);
+        setListCount(res.data.listCount);
+        setCurrentParam(cpage);
       });
+  };
+
+  const handlerModal = (seq?: number) => {
+    setModal(!modal);
+    setNotiSeq(seq);
+  };
+
+  const postSuccess = () => {
+    setModal(!modal);
+    searchNoticeList();
   };
 
   return (
     <>
-      총 갯수 : 0 현재 페이지 : 0
+      총 갯수 : {listCount} 현재 페이지 : {currentParam}
       <StyledTable>
         <thead>
           <tr>
@@ -86,12 +96,22 @@ export const NoticeMain = () => {
             </tr>
           )}
         </tbody>
-        {modal ? (
-          <Protal>
-            <NoticeModal noticeSeq={noticeSeq}></NoticeModal>
-          </Protal>
-        ) : null}
       </StyledTable>
+      <PageNavigate
+        totalItemsCount={listCount}
+        onChange={searchNoticeList}
+        itemsCountPerPage={5}
+        activePage={currentParam as number}
+      ></PageNavigate>
+      {modal ? (
+        <Protal>
+          <NoticeModal
+            noticeSeq={notiSeq}
+            onSuccess={postSuccess}
+            setNoticeSeq={setNotiSeq}
+          ></NoticeModal>
+        </Protal>
+      ) : null}
     </>
   );
 };
