@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import { Button } from "../../../../common/Button/Button";
+import { Button } from "../../../common/Button/Button";
 import { ComnCodSearChStyled } from "./styled";
-import { ConmCodContext } from "../../../../../api/provider/ComnCodMgrProvider";
+import { ConmCodContext } from "../../../../api/provider/ComnCodMgrProvider";
 
 
 export const ComnCodSearch = () => {

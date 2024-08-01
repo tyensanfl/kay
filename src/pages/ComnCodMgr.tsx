@@ -1,6 +1,6 @@
 import { ContentBox } from "../component/common/ContentBox/ContentBox";
 import { ComnCodMgrMain } from "../component/page/ComnCodMgr/ComnCodMgrMain/ComnCodMgrMain";
-import { ComnCodSearch } from "../component/page/ComnCodMgr/ComnCodMgrMain/ComnCodSearch/ComnCodSearch";
+import { ComnCodSearch } from "../component/page/ComnCodMgr/ComnCodSearch/ComnCodSearch";
 import { ConmCodProvider } from "../api/provider/ComnCodMgrProvider";
 
 export const ComnCodMgr = () => {

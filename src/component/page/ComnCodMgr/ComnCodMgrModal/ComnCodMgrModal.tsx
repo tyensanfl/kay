@@ -13,15 +13,18 @@ export interface IComnCod{
 
 }
 
+
 export interface IPostResponse{
     result: 'SUCCESS'
 }
+
 
 export interface IComnCodMgrModalProps{
     onPostSuccess: () => void;
     grpCod: string;
     setGrpCod:(grpCod:string)=>void
 }
+
 
 export interface IComnGrpCodModal{
     grp_cod: string;
@@ -30,21 +33,22 @@ export interface IComnGrpCodModal{
     use_poa: string;  
 }
 
+
 export interface IDetailResponse extends IPostResponse{
     comnGrpCodModel : IComnGrpCodModal;
     resultMsg: string;
 }
 
+
 export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCod, setGrpCod})=>{
 
     const [modal, setModal] = useRecoilState<boolean>(modalState);
-    const [comnCod, setComnCod] = useState<IComnCod>({});
-    const [detailComnCod, SetDetailComnCod] = useState<IComnGrpCodModal>()
-
+    const [comnCod, setComnCod] = useState<IComnCod>();
+    // const [detailComnCod, SetDetailComnCod] = useState<IComnGrpCodModal>();
 
     useEffect(()=>{
-        if(modal) searchDetail(grpCod);
-    },[modal])
+        if(modal && grpCod) searchDetail(grpCod);
+    },[modal]);
 
     const searchDetail = (grpCod: string)=>{
         const postAction:AxiosRequestConfig = {
@@ -57,7 +61,7 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
         }
         axios(postAction)
             .then((res:AxiosResponse<IDetailResponse>)=>{
-                SetDetailComnCod(res.data.comnGrpCodModel)
+                setComnCod(res.data.comnGrpCodModel)
             })
 
     };
@@ -86,10 +90,49 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
 
     };
 
+
+    const handlerUpdate = () => {
+        const postAction:AxiosRequestConfig = {
+            method:'POST',
+            url: '/system/updateComnGrpCodJson.do',
+            data: comnCod,
+            headers:{
+                'Content-Type': 'application/json',
+            }
+        }
+        axios(postAction)
+                .then((res:AxiosResponse<IPostResponse>)=>{
+                    if(res.data.result === 'SUCCESS'){
+                        onPostSuccess();
+                    }
+                })
+    };
+
+
+    const handlerDelete = () => {
+        const postAction:AxiosRequestConfig = {
+            method:'POST',
+            url: '/system/deleteComnGrpCodJson.do',
+            data: {grp_cod : grpCod},
+            headers:{
+                'Content-Type': 'application/json',
+            }
+        }
+        axios(postAction)
+        .then((res:AxiosResponse<IPostResponse>)=>{
+            if(res.data.result === 'SUCCESS'){
+                onPostSuccess();
+            }
+        })
+    };
+
+
     const cleanUp = () => {
-        SetDetailComnCod(undefined);
+        setComnCod(undefined);
         setGrpCod('');
     };
+
+
 
     return(
         <ComnCodMgrModalStyled isOpen={modal} ariaHideApp={false} onAfterClose={cleanUp}>
@@ -104,7 +147,8 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
                                 onChange={(e)=>{
                                     setComnCod({...comnCod, grp_cod : e.target.value})
                                 }}
-                                defaultValue={detailComnCod?.grp_cod}
+                                defaultValue={comnCod?.grp_cod}
+                                readOnly={grpCod ? true : false}
                                 ></input>
                             </td>
                             <th>그룹 코드 명</th>
@@ -113,7 +157,7 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
                                 onChange={(e)=>{
                                     setComnCod({...comnCod, grp_cod_nm : e.target.value})
                                 }}
-                                defaultValue={detailComnCod?.grp_cod_nm}
+                                defaultValue={comnCod?.grp_cod_nm}
                                 ></input>
                             </td>
                         </tr>
@@ -124,7 +168,7 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
                                 onChange={(e)=>{
                                     setComnCod({...comnCod, grp_cod_eplti : e.target.value})
                                 }}
-                                defaultValue={detailComnCod?.grp_cod_eplti}
+                                defaultValue={comnCod?.grp_cod_eplti}
                                 ></input>
                             </td>
                         </tr>
@@ -135,14 +179,14 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
                                  onChange={(e)=>{
                                     setComnCod({...comnCod, use_poa : e.target.value})
                                 }}
-                                checked ={detailComnCod?.use_poa === 'Y'}
+                                checked ={comnCod?.use_poa === 'Y'}
                                 ></input>
                                 사용
                                 <input type="radio" name="useYn" value={'N'}
                                  onChange={(e)=>{
                                     setComnCod({...comnCod, use_poa : e.target.value})
                                 }}
-                                checked ={detailComnCod?.use_poa === 'N'}
+                                checked ={comnCod?.use_poa === 'N'}
                                 ></input>
                                 미사용
                             </td>
@@ -150,7 +194,10 @@ export const ComnCodMgrModal: FC<IComnCodMgrModalProps> = ({onPostSuccess, grpCo
                     </tbody>
                 </ComnCodMgrTableStyled>
                 <div className="btn-group">
-                    <Button onClick={handlerSave}>저장</Button>
+                    <Button onClick={grpCod ? handlerUpdate : handlerSave}>
+                        {comnCod ? "수정" : "저장"}
+                    </Button>
+                    {grpCod ? <Button onClick={handlerDelete}>삭제</Button> : null}
                     <Button onClick={()=>{setModal(!modal)}}>닫기</Button>
                 </div>
             </div>
